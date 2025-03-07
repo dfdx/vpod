@@ -79,6 +79,7 @@ def start(image: str, query: str, workspace: str | None = None):
 
     # launch instance
     resp = sdk.create_instance(id=offer["id"], image=image, onstart_cmd=ONSTART_CMD)
+    print("Instances UI: https://cloud.vast.ai/instances/")
     if not resp["success"]:
         raise ValueError(f"Failed to rent!")
     instance_id = resp["new_contract"]
@@ -125,9 +126,35 @@ def stop():
 
 
 
-###########################################################
 
 def main():
+    parser = argparse.ArgumentParser("Manage devpods on vast.ai")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # START
+    start_parser = subparsers.add_parser("start", help="Start a devpod")
+    start_parser.add_argument("image", type=str, help="Image to run on the devpod")
+    start_parser.add_argument("query", type=str, help="Vast.ai VM query, e.g. 'gpu_name=RTX_3090 num_gpus=1'")
+    start_parser.add_argument("workspace", type=str, help="Name of the workspace (in `~/work/`) to upload to the devpod")
+
+    # STOP
+    stop_parser = subparsers.add_parser("stop", help="Stop the currently running devpod")
+    # stop_parser.add_argument("w", type=int, help="Argument w")
+
+    args = parser.parse_args()
+    if args.command == "start":
+        start(args.image, args.query, args.workspace)
+    elif args.command == "stop":
+        stop()
+
+
+if __name__ == "__main__" and "__file__" in globals():
+    main()
+
+
+###########################################################
+
+def repl():
     image = "faithlessfriend/equilibrium:dev"
     query = "gpu_name=RTX_3080 num_gpus=1"
     workspace = "equilibrium"
